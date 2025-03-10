@@ -12,36 +12,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.zenithwear.ui.theme.ZenithWearTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
+import com.example.zenithwear.ui.Screen.HomeScreen
+import com.example.zenithwear.ui.Screen.Login
+import com.example.zenithwear.ui.Screen.SignUp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ZenithWearTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        ComposableMultiScreenApp()
         }
     }
 }
-
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun ComposableMultiScreenApp(){
+    val navController = rememberNavController()
+    SetupNavGraph(navController = navController)
 }
-
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    ZenithWearTheme {
-        Greeting("Android")
+fun SetupNavGraph(navController : NavHostController){
+    NavHost(navController = navController, startDestination = "Home_Screen"){
+        composable("Home_Screen"){ HomeScreen(navController) }
+        composable("Login"){ Login(navController)}
+        composable("SignUp"){ SignUp(navController) }
+
+
     }
 }
+
