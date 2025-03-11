@@ -16,8 +16,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.example.zenithwear.ui.Screen.ConfirmPasswordScreen
+import com.example.zenithwear.ui.Screen.HomePage
 import com.example.zenithwear.ui.Screen.HomeScreen
 import com.example.zenithwear.ui.Screen.Login
+import com.example.zenithwear.ui.Screen.PasswordTextField
 import com.example.zenithwear.ui.Screen.SignUp
 
 class MainActivity : ComponentActivity() {
@@ -40,6 +43,8 @@ fun SetupNavGraph(navController : NavHostController){
         composable("Home_Screen"){ HomeScreen(navController) }
         composable("Login"){ Login(navController)}
         composable("SignUp"){ SignUp(navController) }
+        composable("HomePage"){ HomePage(navController) }
+        composable("ConfirmPasswordScreen"){ ConfirmPasswordScreen(navController)}
 
 
     }

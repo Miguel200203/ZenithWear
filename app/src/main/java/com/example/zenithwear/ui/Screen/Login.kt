@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.OutlinedTextField
@@ -36,30 +37,51 @@ import androidx.navigation.NavHostController
 import com.example.zenithwear.R
 
 @Composable
-fun Login (navHostController: NavHostController){
-    LazyColumn (
+fun Login(navHostController: NavHostController) {
+    var email by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
+    var isEmailValid by remember { mutableStateOf(false) }
+    var isPasswordValid by remember { mutableStateOf(false) }
+
+    LazyColumn(
         modifier = Modifier
             .background(color = Color.White)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-
-    ){
+    ) {
         item {
             imagen()
             Text("Enter your email to log in to the app", fontSize = 16.sp)
         }
-        item{
-            CuadroTextoCorreo()
-            cuadroPassword()
+        item {
+            CuadroTextoCorreo(
+                value = email,
+                onValueChange = { newValue ->
+                    email = newValue
+                    isEmailValid = isValidEmail(newValue.text)
+                },
+                isError = !isEmailValid && email.text.isNotEmpty()
+            )
+            cuadroPassword(
+                value = password,
+                onValueChange = { newValue ->
+                    password = newValue
+                    isPasswordValid = newValue.text.isNotEmpty()
+                },
+                isError = !isPasswordValid && password.text.isNotEmpty()
+            )
         }
         item {
-            ExtendedFloatingActionButton(
+            Button(
                 modifier = Modifier.padding(15.dp)
                     .width(310.dp),
-                contentColor = Color.White,
-                containerColor = Color.Black,
-                onClick = { navHostController.navigate("SignUp") }
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                onClick = { navHostController.navigate("HomePage") },
+                enabled = isEmailValid && isPasswordValid // Habilitar solo si las validaciones son correctas
             ) {
                 Text(
                     "Continue",
@@ -69,52 +91,60 @@ fun Login (navHostController: NavHostController){
             }
         }
     }
+}
 
-}@Composable
-fun CuadroTextoCorreo() {
-
-    var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
+@Composable
+fun CuadroTextoCorreo(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    isError: Boolean
+) {
     var estaEscribiendo by remember { mutableStateOf(false) }
 
     OutlinedTextField(
-        value = textFieldValue,
-        onValueChange = { newValue ->
-            textFieldValue = newValue
-            estaEscribiendo = true
-        },
+        value = value,
+        onValueChange = onValueChange,
         label = { if (!estaEscribiendo) Text("Correo electrónico") },
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.White,
             focusedContainerColor = Color.White,
-            focusedIndicatorColor = Color.Blue, // Color del borde cuando está enfocado
-            unfocusedIndicatorColor = Color.Gray // Color del borde cuando no está enfocado
+            focusedIndicatorColor = if (isError) Color.Red else Color.Blue, // Cambiar color si hay error
+            unfocusedIndicatorColor = if (isError) Color.Red else Color.Gray
         ),
-        shape = RoundedCornerShape(8.dp), // Bordes redondeados
+        shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         singleLine = true,
-        placeholder = { if (!estaEscribiendo) Text("Ingresa tu correo") }
+        placeholder = { if (!estaEscribiendo) Text("Ingresa tu correo") },
+        isError = isError // Mostrar error si el correo no es válido
     )
+    if (isError) {
+        Text(
+            text = "Correo no válido",
+            color = Color.Red,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+    }
 }
 
 @Composable
-fun cuadroPassword() {
-    var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
+fun cuadroPassword(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    isError: Boolean
+) {
     var estaEscribiendo by remember { mutableStateOf(false) }
 
     OutlinedTextField(
-        value = textFieldValue,
-        onValueChange = { newValue ->
-            textFieldValue = newValue
-            estaEscribiendo = true
-        },
+        value = value,
+        onValueChange = onValueChange,
         label = { if (!estaEscribiendo) Text("Contraseña") },
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.White,
             focusedContainerColor = Color.White,
-            focusedIndicatorColor = Color.Blue,
-            unfocusedIndicatorColor = Color.Gray
+            focusedIndicatorColor = if (isError) Color.Red else Color.Blue, // Cambiar color si hay error
+            unfocusedIndicatorColor = if (isError) Color.Red else Color.Gray
         ),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
@@ -122,37 +152,30 @@ fun cuadroPassword() {
             .padding(16.dp),
         singleLine = true,
         placeholder = { if (!estaEscribiendo) Text("Ingresa tu contraseña") },
-        visualTransformation = PasswordVisualTransformation() // Oculta la contraseña
+        visualTransformation = PasswordVisualTransformation(),
+        isError = isError // Mostrar error si la contraseña está vacía
     )
+    if (isError) {
+        Text(
+            text = "La contraseña no puede estar vacía",
+            color = Color.Red,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+    }
 }
 
 @Composable
-fun imagen(){
+fun imagen() {
+    Image(
+        modifier = Modifier.padding(25.dp)
+            .clip(RoundedCornerShape(45.dp)),
+        painter = painterResource(R.drawable.icono),
+        contentDescription = "Logo"
+    )
+}
 
-        Image(
-            modifier = Modifier.padding(25.dp)
-                .clip(RoundedCornerShape(45.dp)),
-            painter = painterResource(R.drawable.icono),
-            contentDescription = "Logo"
-
-        )
-    }
-@Composable
-fun button(navHostController: NavHostController){
-
-        ExtendedFloatingActionButton(
-            modifier = Modifier.padding(15.dp)
-                .width(210.dp)
-                .background(Color.Black),
-            onClick = { navHostController.navigate("SignUp") }
-        ) {
-            Text(
-                "Continue",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color.White
-            )
-        }
-
-
+// Función para validar el formato del correo electrónico
+fun isValidEmail(email: String): Boolean {
+    val emailRegex = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})"
+    return email.matches(emailRegex.toRegex())
 }
