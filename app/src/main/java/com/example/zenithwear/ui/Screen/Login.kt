@@ -81,7 +81,7 @@ fun Login(navHostController: NavHostController) {
                     contentColor = Color.White
                 ),
                 onClick = { navHostController.navigate("HomePage") },
-                enabled = isEmailValid && isPasswordValid // Habilitar solo si las validaciones son correctas
+                enabled = isEmailValid && isPasswordValid
             ) {
                 Text(
                     "Continue",
@@ -117,7 +117,7 @@ fun CuadroTextoCorreo(
             .padding(16.dp),
         singleLine = true,
         placeholder = { if (!estaEscribiendo) Text("Ingresa tu correo") },
-        isError = isError // Mostrar error si el correo no es válido
+        isError = isError
     )
     if (isError) {
         Text(
@@ -153,7 +153,7 @@ fun cuadroPassword(
         singleLine = true,
         placeholder = { if (!estaEscribiendo) Text("Ingresa tu contraseña") },
         visualTransformation = PasswordVisualTransformation(),
-        isError = isError // Mostrar error si la contraseña está vacía
+        isError = isError
     )
     if (isError) {
         Text(
@@ -174,7 +174,7 @@ fun imagen() {
     )
 }
 
-// Función para validar el formato del correo electrónico
+
 fun isValidEmail(email: String): Boolean {
     val emailRegex = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})"
     return email.matches(emailRegex.toRegex())

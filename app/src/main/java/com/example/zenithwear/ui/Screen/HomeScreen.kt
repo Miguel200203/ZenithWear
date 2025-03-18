@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,9 +33,7 @@ fun HomeScreen(navHostController: NavHostController) {
     LazyColumn(
         modifier = Modifier
             .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.White, Color.LightGray)
-                )
+                    color = Color.White
             )
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,

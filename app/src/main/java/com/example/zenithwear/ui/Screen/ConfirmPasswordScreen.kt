@@ -37,8 +37,8 @@ import com.example.zenithwear.R
 fun ConfirmPasswordScreen(navHostController: NavHostController) {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var confirmPassword by remember { mutableStateOf(TextFieldValue("")) }
-    var showAlertDialog by remember { mutableStateOf(false) } // Diálogo de error
-    var showSuccessDialog by remember { mutableStateOf(false) } // Diálogo de éxito
+    var showAlertDialog by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -73,9 +73,9 @@ fun ConfirmPasswordScreen(navHostController: NavHostController) {
                 containerColor = Color.Black,
                 onClick = {
                     if (password.text != confirmPassword.text) {
-                        showAlertDialog = true // Mostrar diálogo de error
+                        showAlertDialog = true
                     } else {
-                        showSuccessDialog = true // Mostrar diálogo de éxito
+                        showSuccessDialog = true
                     }
                 }
             ) {
@@ -88,7 +88,7 @@ fun ConfirmPasswordScreen(navHostController: NavHostController) {
         }
     }
 
-    // Diálogo de error si las contraseñas no coinciden
+
     if (showAlertDialog) {
         AlertDialog(
             onDismissRequest = { showAlertDialog = false },
@@ -101,8 +101,6 @@ fun ConfirmPasswordScreen(navHostController: NavHostController) {
             }
         )
     }
-
-    // Diálogo de éxito si las contraseñas coinciden
     if (showSuccessDialog) {
         AlertDialog(
             onDismissRequest = { showSuccessDialog = false },
@@ -110,8 +108,8 @@ fun ConfirmPasswordScreen(navHostController: NavHostController) {
             text = { Text("Registration successful!") },
             confirmButton = {
                 Button(onClick = {
-                    showSuccessDialog = false // Cerrar el diálogo
-                    navHostController.navigate("Login") // Navegar a la siguiente pantalla
+                    showSuccessDialog = false
+                    navHostController.navigate("PersonalInformation")
                 }) {
                     Text("OK")
                 }
