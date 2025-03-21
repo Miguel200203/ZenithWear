@@ -6,6 +6,7 @@ data class MenuModel (
     val id:Int,
     val title:String,
     val option:String,
+    val categoria: String,
     val icon: ImageVector,
     val subItems: List<MenuModel> = emptyList()
 )
