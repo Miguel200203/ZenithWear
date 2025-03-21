@@ -71,6 +71,7 @@ import com.example.zenithwear.data.Model.MenuModel
 import com.example.zenithwear.data.Model.ModelProduct
 import com.example.zenithwear.data.Model.PostCardModel
 import com.example.zenithwear.data.Model.PostCardModel2
+import com.example.zenithwear.data.Model.Talla
 import com.example.zenithwear.ui.Component.CardCategorias
 import com.example.zenithwear.ui.Component.CardMarca
 import com.example.zenithwear.ui.Component.CardProduct
@@ -86,24 +87,24 @@ fun HomePage (navHostController: NavHostController) {
     var searchQuery by remember { mutableStateOf("") }
 
     val MenuOptions = arrayOf(
-        MenuModel(1, "Home", "HomePage", ImageVector.vectorResource(id = R.drawable.icono2)),
-        MenuModel(2, "IA", "IA", Icons.Filled.ArrowDropDown, listOf(
-        MenuModel(3, " Dress for the occasion", "IA", Icons.Filled.ArrowForward),
-        MenuModel(4, "Clothing according to the weather", "IA", Icons.Filled.ArrowForward),
-        MenuModel(5, "Other", "IA", Icons.Filled.ArrowForward) ) ),
-        MenuModel(6, "Products", "Products", Icons.Filled.ArrowDropDown, listOf(
-        MenuModel(7, "Men's", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(8, "Women's", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(9, "kids", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(10, "Collections", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(11, "Footwear", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(12, "Accessories", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(13, "Sportwear", "Products", Icons.Filled.KeyboardArrowRight),
-        MenuModel(14, "Collections", "Products", Icons.Filled.KeyboardArrowRight)) ),
-        MenuModel(15, "Brands", "Products", Icons.Filled.Add, listOf(
-        MenuModel(16, "Adidas", "Products", ImageVector.vectorResource(id = R.drawable.adidass)),
-        MenuModel(17, "Nike", "Products", ImageVector.vectorResource(id = R.drawable.nike2)),
-        MenuModel(18, "Under Armour", "Products",ImageVector.vectorResource(id = R.drawable.under_armour_logo_10)))),
+        MenuModel(1, "Home", "HomePage", "",ImageVector.vectorResource(id = R.drawable.icono2)),
+        MenuModel(2, "IA", "IA", "", Icons.Filled.ArrowDropDown, listOf(
+        MenuModel(3, " Dress for the occasion", "IA", "", Icons.Filled.ArrowForward),
+        MenuModel(4, "Clothing according to the weather", "IA", "", Icons.Filled.ArrowForward),
+        MenuModel(5, "Other", "IA", "", Icons.Filled.ArrowForward) ) ),
+        MenuModel(6, "Products", "Products", "", Icons.Filled.ArrowDropDown, listOf(
+        MenuModel(7, "Men's", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(8, "Women's", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(9, "kids", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(10, "Collections", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(11, "Footwear", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(12, "Accessories", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(13, "Sportwear", "Products", "", Icons.Filled.KeyboardArrowRight),
+        MenuModel(14, "Collections", "Products", "", Icons.Filled.KeyboardArrowRight)) ),
+        MenuModel(15, "Brands", "Products", "", Icons.Filled.Add, listOf(
+        MenuModel(16, "Adidas", "Products", "", ImageVector.vectorResource(id = R.drawable.adidass)),
+        MenuModel(17, "Nike", "Products", "", ImageVector.vectorResource(id = R.drawable.nike2)),
+        MenuModel(18, "Under Armour", "Products","", ImageVector.vectorResource(id = R.drawable.under_armour_logo_10)))),
 
 
     )
@@ -345,12 +346,12 @@ fun Bars2(navHostController: NavHostController) {
 @Composable
 fun NewArrivals(){
     val arraydefault = arrayOf(
-        ModelProduct(1, "Samba OG W",2299, R.drawable.samba),
-        ModelProduct(2, "Women's",2199, R.drawable.chamarrash),
-        ModelProduct(3, "Nike Blazer",2499, R.drawable.blazer),
-        ModelProduct(4, "Mochila Nike",1299, R.drawable.mochila),
-        ModelProduct(5, "Curry 12 PSCS",3999, R.drawable.curry),
-        ModelProduct(6, "Sudadera con capucha",1099, R.drawable.sudadera),
+        ModelProduct(1, "Samba OG W",2299, R.drawable.samba,"","","", Talla.M, 1),
+        ModelProduct(2, "Women's",2199, R.drawable.chamarrash,"","","", Talla.S, 2),
+        ModelProduct(3, "Nike Blazer",2499, R.drawable.blazer,"","","", Talla.M, 3),
+        ModelProduct(4, "Mochila Nike",1299, R.drawable.mochila,"","","", Talla.M, 4),
+        ModelProduct(5, "Curry 12 PSCS",3999, R.drawable.curry,"","","", Talla.M, 5),
+        ModelProduct(6, "Sudadera con capucha",1099, R.drawable.sudadera,"","","",Talla.M,5),
         )
     LazyRow(modifier = Modifier.fillMaxWidth()) {
         items(arraydefault) { item ->
