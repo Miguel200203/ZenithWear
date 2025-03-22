@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -75,10 +77,11 @@ import com.example.zenithwear.data.Model.Talla
 import com.example.zenithwear.ui.Component.CardCategorias
 import com.example.zenithwear.ui.Component.CardMarca
 import com.example.zenithwear.ui.Component.CardProduct
+import com.example.zenithwear.ui.Component.CartViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomePage (navHostController: NavHostController) {
+fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel) {
     var option by rememberSaveable { mutableStateOf("Buttons") }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -99,12 +102,11 @@ fun HomePage (navHostController: NavHostController) {
         MenuModel(10, "Collections", "Products", "", Icons.Filled.KeyboardArrowRight),
         MenuModel(11, "Footwear", "Products", "", Icons.Filled.KeyboardArrowRight),
         MenuModel(12, "Accessories", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(13, "Sportwear", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(14, "Collections", "Products", "", Icons.Filled.KeyboardArrowRight)) ),
-        MenuModel(15, "Brands", "Products", "", Icons.Filled.Add, listOf(
-        MenuModel(16, "Adidas", "Products", "", ImageVector.vectorResource(id = R.drawable.adidass)),
-        MenuModel(17, "Nike", "Products", "", ImageVector.vectorResource(id = R.drawable.nike2)),
-        MenuModel(18, "Under Armour", "Products","", ImageVector.vectorResource(id = R.drawable.under_armour_logo_10)))),
+        MenuModel(13, "Sportwear", "Products", "", Icons.Filled.KeyboardArrowRight)) ),
+        MenuModel(14, "Brands", "Products", "", Icons.Filled.Add, listOf(
+        MenuModel(15, "Adidas", "Products", "", ImageVector.vectorResource(id = R.drawable.adidass)),
+        MenuModel(16, "Nike", "Products", "", ImageVector.vectorResource(id = R.drawable.nike2)),
+        MenuModel(17, "Under Armour", "Products","", ImageVector.vectorResource(id = R.drawable.under_armour_logo_10)))),
 
 
     )
@@ -173,7 +175,7 @@ fun HomePage (navHostController: NavHostController) {
     ) {
         Scaffold(
             topBar = { Bars(navHostController) },
-            bottomBar = { Bars2(navHostController) }
+            bottomBar = { Bars2(navHostController = navHostController, cartViewModel = cartViewModel) }
         ) { innerPadding ->
 
             LazyColumn(
@@ -306,38 +308,54 @@ fun Bars(navHostController: NavHostController) {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Bars2(navHostController: NavHostController) {
+fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
+    val cartItemCount = cartViewModel.cartProducts.size // Obtén la cantidad de productos en el carrito
+
     BottomAppBar(
         containerColor = Color.White,
         contentColor = Color.Gray
     ) {
         IconButton(
             modifier = Modifier.weight(1f),
-            onClick = {navHostController.navigate("HomePage")}
+            onClick = { navHostController.navigate("HomePage") }
         ) {
             Icon(Icons.Filled.Home, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
         }
         IconButton(
             modifier = Modifier.weight(1f),
-            onClick = {navHostController.navigate("Favorite")}
+            onClick = { navHostController.navigate("Favorite") }
         ) {
             Icon(Icons.Filled.FavoriteBorder, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
         }
         IconButton(
             modifier = Modifier.weight(1f),
-            onClick = {navHostController.navigate("Cart")}
+            onClick = { navHostController.navigate("Cart") }
         ) {
-            Icon(Icons.Filled.ShoppingCart, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
+            BadgedBox(
+                badge = {
+                    if (cartItemCount > 0) {
+                        Badge {
+                            Text(text = cartItemCount.toString())
+                        }
+                    }
+                }
+            ) {
+                Icon(
+                    Icons.Filled.ShoppingCart,
+                    contentDescription = "",
+                    tint = Color.Gray
+                )
+            }
         }
         IconButton(
             modifier = Modifier.weight(1f),
-            onClick = {navHostController.navigate("Notification")}
+            onClick = { navHostController.navigate("Notification") }
         ) {
             Icon(Icons.Filled.Notifications, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
         }
         IconButton(
             modifier = Modifier.weight(1f),
-            onClick = {navHostController.navigate("Profile")}
+            onClick = { navHostController.navigate("Profile") }
         ) {
             Icon(Icons.Filled.Person, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
         }

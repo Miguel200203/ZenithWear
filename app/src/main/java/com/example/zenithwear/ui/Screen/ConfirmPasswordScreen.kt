@@ -31,10 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.example.zenithwear.R
+import com.example.zenithwear.ui.Component.CartViewModel
 
 
 @Composable
-fun ConfirmPasswordScreen(navHostController: NavHostController) {
+fun ConfirmPasswordScreen(navHostController: NavHostController,cartViewModel: CartViewModel) {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var confirmPassword by remember { mutableStateOf(TextFieldValue("")) }
     var showAlertDialog by remember { mutableStateOf(false) }

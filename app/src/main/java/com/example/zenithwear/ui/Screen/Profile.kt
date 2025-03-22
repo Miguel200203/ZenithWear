@@ -14,12 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.zenithwear.ui.Component.CartViewModel
 
 @Composable
-fun Profile(navHostController: NavHostController){
+fun Profile(navHostController: NavHostController,cartViewModel: CartViewModel){
     Scaffold(
         topBar = { Bars(navHostController) },
-        bottomBar = { Bars2(navHostController) }
+        bottomBar = { Bars2(navHostController,cartViewModel ) }
     ) { innerPadding ->
 
         LazyColumn(
