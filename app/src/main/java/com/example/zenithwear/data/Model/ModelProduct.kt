@@ -11,7 +11,7 @@ enum class Talla(val descripcion: String) {
 data class ModelProduct(
     val id:Int,
     val title:String,
-    val precio:Number,
+    val precio:Int,
     val image:Int,
     val categoria: String,
     val marca: String,

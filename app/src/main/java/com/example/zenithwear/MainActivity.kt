@@ -12,11 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.zenithwear.ui.theme.ZenithWearTheme
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.example.zenithwear.ui.Component.CartViewModel
 import com.example.zenithwear.ui.Screen.Cart
 import com.example.zenithwear.ui.Screen.ConfirmPasswordScreen
 import com.example.zenithwear.ui.Screen.Favorite
@@ -47,24 +49,26 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ComposableMultiScreenApp(){
     val navController = rememberNavController()
-    SetupNavGraph(navController = navController)
+    val cartViewModel: CartViewModel = viewModel() // Crea el ViewModel
+    SetupNavGraph(navController = navController, cartViewModel = cartViewModel)
 }
+
 @Composable
-fun SetupNavGraph(navController : NavHostController){
-    NavHost(navController = navController, startDestination = "HomePage"){
+fun SetupNavGraph(navController : NavHostController, cartViewModel: CartViewModel){
+    NavHost(navController = navController, startDestination = "Home_Screen"){
         composable("Home_Screen"){ HomeScreen(navController) }
         composable("Login"){ Login(navController)}
         composable("SignUp"){ SignUp(navController) }
-        composable("HomePage"){ HomePage(navController) }
-        composable("ConfirmPasswordScreen"){ ConfirmPasswordScreen(navController)}
+        composable("HomePage"){ HomePage(navController, cartViewModel) }
+        composable("ConfirmPasswordScreen"){ ConfirmPasswordScreen(navController, cartViewModel)}
         composable("PersonalInformation"){ PersonalInformation(navController)}
-        composable("Cart"){ Cart(navController) }
-        composable("Favorite"){ Favorite(navController)}
-        composable("IA"){ IA(navController)}
-        composable("Notification"){ Notification(navController)}
-        composable("Products"){ Products(navController)}
-        composable("Profile"){ Profile(navController)}
-        composable("Search"){ Search(navController)}
+        composable("Cart"){ Cart(navController, cartViewModel) }
+        composable("Favorite"){ Favorite(navController, cartViewModel)}
+        composable("IA"){ IA(navController, cartViewModel)}
+        composable("Notification"){ Notification(navController, cartViewModel)}
+        composable("Products"){ Products(navController, cartViewModel)}
+        composable("Profile"){ Profile(navController, cartViewModel)}
+        composable("Search"){ Search(navController, cartViewModel)}
     }
 }
 
