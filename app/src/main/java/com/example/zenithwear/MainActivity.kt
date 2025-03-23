@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.example.zenithwear.ui.Component.CartViewModel
 import com.example.zenithwear.ui.Screen.Cart
+import com.example.zenithwear.ui.Screen.ChangePasswordScreen
 import com.example.zenithwear.ui.Screen.ConfirmPasswordScreen
 import com.example.zenithwear.ui.Screen.Favorite
 import com.example.zenithwear.ui.Screen.HomePage
@@ -32,6 +33,7 @@ import com.example.zenithwear.ui.Screen.PersonalInformation
 import com.example.zenithwear.ui.Screen.Products
 import com.example.zenithwear.ui.Screen.Profile
 import com.example.zenithwear.ui.Screen.Search
+import com.example.zenithwear.ui.Screen.VerificationCodeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,6 +71,8 @@ fun SetupNavGraph(navController : NavHostController, cartViewModel: CartViewMode
         composable("Products"){ Products(navController, cartViewModel)}
         composable("Profile"){ Profile(navController, cartViewModel)}
         composable("Search"){ Search(navController, cartViewModel)}
+        composable("VerificationCodeScreen"){ VerificationCodeScreen(navController)}
+        composable("ChangePasswordScreen"){ ChangePasswordScreen(navController)}
     }
 }
 
