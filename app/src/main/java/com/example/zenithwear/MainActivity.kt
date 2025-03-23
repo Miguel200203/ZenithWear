@@ -52,6 +52,7 @@ fun ComposableMultiScreenApp(){
     val cartViewModel: CartViewModel = viewModel() // Crea el ViewModel
     SetupNavGraph(navController = navController, cartViewModel = cartViewModel)
 }
+
 @Composable
 fun SetupNavGraph(navController : NavHostController, cartViewModel: CartViewModel){
     NavHost(navController = navController, startDestination = "Home_Screen"){
