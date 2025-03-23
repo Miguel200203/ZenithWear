@@ -2,6 +2,7 @@ package com.example.zenithwear.ui.Component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,20 +30,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun CardCategorias(id:Int,title:String, image:Int){
+fun CardCategorias(id:Int,title:String, image:Int, navHostController: NavHostController){
     Card (
         modifier = Modifier
             .background(Color.White)
             .fillMaxWidth()
             .padding(5.dp)
+            .clickable {
+                navHostController.navigate("Products")
+            }
     ){
         Column(
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxWidth()
                 .padding(5.dp)
+
         ) {
             Image(
             modifier = Modifier
@@ -67,12 +73,15 @@ fun CardCategorias(id:Int,title:String, image:Int){
 
 
 @Composable
-fun CardMarca(id:Int,title:String, image:Int, icon: Int){
+fun CardMarca(id:Int,title:String, image:Int, icon: Int, navHostController: NavHostController){
     Card (
         modifier = Modifier
             .background(Color.White)
             .fillMaxWidth()
             .padding(5.dp)
+            .clickable {
+                navHostController.navigate("Products")
+            }
     ){
         Column(
             modifier = Modifier

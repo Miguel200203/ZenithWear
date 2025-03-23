@@ -2,6 +2,7 @@ package com.example.zenithwear.ui.Screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -35,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.zenithwear.R
-
 @Composable
 fun Login(navHostController: NavHostController) {
     var email by remember { mutableStateOf(TextFieldValue("")) }
@@ -89,6 +90,24 @@ fun Login(navHostController: NavHostController) {
                     color = Color.White
                 )
             }
+        }
+        item {
+
+            Text(
+                text = "Forgot Password?",
+                color = Color.Blue,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        if (isEmailValid) {
+                            navHostController.navigate("VerificationCodeScreen")
+                        }
+
+
+                    }
+            )
         }
     }
 }

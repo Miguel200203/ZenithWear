@@ -193,7 +193,7 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
                         modifier = Modifier.padding(15.dp)
                     )
                 }
-                item { categorias() }
+                item { categorias(navHostController) }
                 item {
                     Text(
                         text = "Brands",
@@ -202,7 +202,7 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
                         modifier = Modifier.padding(15.dp)
                     )
                 }
-                item { marca() }
+                item { marca(navHostController) }
 
             item {
                 Text(
@@ -218,7 +218,7 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
     }
 }
 @Composable
-fun categorias() {
+fun categorias(navHostController: NavHostController) {
     val arraydefault = arrayOf(
         PostCardModel(1, "Men's", R.drawable.ropah),
         PostCardModel(2, "Women's", R.drawable.ropam),
@@ -230,13 +230,13 @@ fun categorias() {
     )
     LazyRow(modifier = Modifier.fillMaxWidth()) {
         items(arraydefault) { item ->
-            CardCategorias(item.id, item.title, item.image)
+            CardCategorias(item.id, item.title, item.image, navHostController )
         }
     }
 }
 
 @Composable
-fun marca() {
+fun marca(navHostController: NavHostController) {
     val arraydefault = arrayOf(
         PostCardModel2(1, "Nike", R.drawable.nike, R.drawable.nike2),
         PostCardModel2(2, "Adidas", R.drawable.adidas, R.drawable.adidass),
@@ -244,7 +244,7 @@ fun marca() {
     )
     LazyRow(modifier = Modifier.fillMaxWidth()) {
         items(arraydefault) { item ->
-            CardMarca(item.id, item.title, item.image, item.icon)
+            CardMarca(item.id, item.title, item.image, item.icon, navHostController )
         }
     }
 }
