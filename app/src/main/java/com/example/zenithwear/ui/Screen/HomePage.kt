@@ -91,7 +91,7 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
 
     val MenuOptions = arrayOf(
         MenuModel(1, "Home", "HomePage", "",ImageVector.vectorResource(id = R.drawable.icono2)),
-        MenuModel(2, "IA", "IA", "", Icons.Filled.ArrowDropDown, listOf(
+        MenuModel(2, "IA", "IA", "", Icons.Filled.Star, listOf(
         MenuModel(3, " Dress for the occasion", "IA", "", Icons.Filled.ArrowForward),
         MenuModel(4, "Clothing according to the weather", "IA", "", Icons.Filled.ArrowForward),
         MenuModel(5, "Other", "IA", "", Icons.Filled.ArrowForward) ) ),
