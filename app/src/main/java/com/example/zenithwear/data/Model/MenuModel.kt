@@ -9,4 +9,5 @@ data class MenuModel (
     val categoria: String,
     val icon: ImageVector,
     val subItems: List<MenuModel> = emptyList()
+
 )
