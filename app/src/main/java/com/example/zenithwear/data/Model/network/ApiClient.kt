@@ -1,6 +1,5 @@
 package com.example.zenithwear.data.Model.network
 
-
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -15,5 +14,3 @@ object RetrofitClient {
             .create(ApiService::class.java)
     }
 }
-
-
