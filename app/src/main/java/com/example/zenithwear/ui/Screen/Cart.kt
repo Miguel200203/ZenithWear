@@ -55,7 +55,7 @@ import com.example.zenithwear.ui.Component.CartViewModel
 
 @Composable
 fun Cart(navHostController: NavHostController, cartViewModel: CartViewModel) {
-    val showPaymentDialog = remember { mutableStateOf(false) } // Diálogo para el método de pago
+    /*val showPaymentDialog = remember { mutableStateOf(false) } // Diálogo para el método de pago
     val showConfirmationDialog = remember { mutableStateOf(false) } // Diálogo de confirmación
     val showSuccessDialog = remember { mutableStateOf(false) } // Diálogo de éxito
     val paymentMethod = remember { mutableStateOf("Cash") } // Método de pago seleccionado
@@ -290,5 +290,5 @@ fun ProductCard(product: ModelProduct, onRemove: () -> Unit) {
                 )
             }
         }
-    }
+    }*/
 }

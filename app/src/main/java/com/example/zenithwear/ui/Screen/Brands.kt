@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.zenithwear.data.Model.Brand
 import com.example.zenithwear.data.Model.Product
 import com.example.zenithwear.data.Model.network.RetrofitClient
@@ -35,7 +36,7 @@ import com.example.zenithwear.ui.Component.CartViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Brands(navController: NavController, cartViewModel: CartViewModel){
+fun Brands(navHostController: NavHostController, cartViewModel: CartViewModel){
     val scope = rememberCoroutineScope()
     val selectBrand = remember { mutableStateOf<Brand?>(null) }
     val selectedProduct = remember { mutableStateOf<Product?>(null) }
@@ -62,15 +63,8 @@ fun Brands(navController: NavController, cartViewModel: CartViewModel){
     val brands = brandsState.value
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Brands") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+        topBar = { Bars(navHostController) },
+        bottomBar = { Bars2(navHostController, cartViewModel)
         }
     ){ padding ->
         Box(

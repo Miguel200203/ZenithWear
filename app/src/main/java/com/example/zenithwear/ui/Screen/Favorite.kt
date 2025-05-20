@@ -24,7 +24,7 @@ import com.example.zenithwear.ui.Component.CartViewModel
 
 @Composable
 fun Favorite(navHostController: NavHostController, cartViewModel: CartViewModel) {
-    Scaffold(
+   /* Scaffold(
         topBar = { Bars(navHostController) },
         bottomBar = { Bars2(navHostController, cartViewModel) }
     ) { innerPadding ->
@@ -69,5 +69,5 @@ fun Favorite(navHostController: NavHostController, cartViewModel: CartViewModel)
                 }
             }
         }
-    }
+    }*/
 }
