@@ -17,7 +17,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.zenithwear.ui.theme.ZenithWearTheme
 import com.example.zenithwear.ui.Component.CartViewModel
+import com.example.zenithwear.ui.Screen.Brands
 import com.example.zenithwear.ui.Screen.Cart
+import com.example.zenithwear.ui.Screen.Categories
 import com.example.zenithwear.ui.Screen.HomeScreen
 import com.example.zenithwear.ui.Screen.Login
 import com.example.zenithwear.ui.Screen.SignUp
@@ -53,7 +55,7 @@ fun ComposableMultiScreenApp(){
 
 @Composable
 fun SetupNavGraph(navController: NavHostController, cartViewModel: CartViewModel){
-    NavHost(navController = navController, startDestination = "Home_Screen"){
+    NavHost(navController = navController, startDestination = "HomePage"){
         composable("Home_Screen") { HomeScreen(navController) }
         composable("Login") { Login(navController) }
         composable("SignUp") { SignUp(navController) }
@@ -65,6 +67,8 @@ fun SetupNavGraph(navController: NavHostController, cartViewModel: CartViewModel
         composable("IA") { IA(navController, cartViewModel) }
         composable("Notification") { Notification(navController, cartViewModel) }
         composable("Products") { Products(navController, cartViewModel) }
+        composable("Brands") { Brands(navController, cartViewModel) }
+        composable("Categories") { Categories(navController, cartViewModel) }
         composable("Profile") { Profile(navController, cartViewModel) }
         composable("Search") { Search(navController, cartViewModel) }
         composable("VerificationCodeScreen") { VerificationCodeScreen(navController) }
