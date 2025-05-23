@@ -73,5 +73,9 @@ fun SetupNavGraph(navController: NavHostController, cartViewModel: CartViewModel
         composable("Search") { Search(navController, cartViewModel) }
         composable("VerificationCodeScreen") { VerificationCodeScreen(navController) }
         composable("ChangePasswordScreen") { ChangePasswordScreen(navController) }
+        composable("offers_screen") { HomePage(navController, cartViewModel) }
+        composable("flash_sale") { Products(navController, cartViewModel) }
+        composable("new_arrivals") { Brands(navController, cartViewModel) }
+        composable("vip_event") { Categories(navController, cartViewModel) }
     }
 }
