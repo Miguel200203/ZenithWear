@@ -48,7 +48,7 @@ fun Notification(navHostController: NavHostController,cartViewModel: CartViewMod
                 NotificationDiscount(
                     title = "50% OFF on Summer Collection!",
                     message = "Hurry up! Don't miss the 50% off on our summer collection. Limited time offer.",
-                    onClick = { /* Handle notification click */ }
+                    onClick = { navHostController.navigate("offers_screen") }
                 )
             }
 
@@ -56,7 +56,7 @@ fun Notification(navHostController: NavHostController,cartViewModel: CartViewMod
                 NotificationSaleAlert(
                     title = "Flash Sale! Up to 70% OFF",
                     message = "Our flash sale starts now. Shop your favorite clothing at unbeatable prices!",
-                    onClick = { /* Handle notification click */ }
+                    onClick = { navHostController.navigate("flash_sale") }
                 )
             }
 
@@ -64,7 +64,7 @@ fun Notification(navHostController: NavHostController,cartViewModel: CartViewMod
                 NotificationNewArrival(
                     title = "New Arrivals! Fresh Styles",
                     message = "Check out our latest arrivals. Fresh styles added to the collection just for you!",
-                    onClick = { /* Handle notification click */ }
+                    onClick = { navHostController.navigate("new_arrivals") }
                 )
             }
 
@@ -72,7 +72,7 @@ fun Notification(navHostController: NavHostController,cartViewModel: CartViewMod
                 NotificationEvent(
                     title = "Exclusive VIP Sale Event",
                     message = "You are invited to our exclusive VIP sale event with additional discounts on select items!",
-                    onClick = { /* Handle notification click */ }
+                    onClick = { navHostController.navigate("vip_event") }
                 )
             }
         }
