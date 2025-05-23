@@ -107,8 +107,6 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
         MenuModel(15, "Adidas", "Products", "", ImageVector.vectorResource(id = R.drawable.adidass)),
         MenuModel(16, "Nike", "Products", "", ImageVector.vectorResource(id = R.drawable.nike2)),
         MenuModel(17, "Under Armour", "Products","", ImageVector.vectorResource(id = R.drawable.under_armour_logo_10)))),
-
-
     )
 
     ModalNavigationDrawer(
@@ -217,6 +215,7 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
         }
     }
 }
+
 @Composable
 fun categorias(navHostController: NavHostController) {
     val arraydefault = arrayOf(
@@ -306,6 +305,7 @@ fun Bars(navHostController: NavHostController) {
             }
         )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
@@ -361,6 +361,7 @@ fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
         }
     }
 }
+
 @Composable
 fun NewArrivals(){
     val arraydefault = arrayOf(
@@ -376,5 +377,4 @@ fun NewArrivals(){
             CardProduct(item.id, item.title, item.precio,item.image)
         }
     }
-
 }

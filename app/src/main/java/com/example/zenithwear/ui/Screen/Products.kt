@@ -93,18 +93,20 @@ fun Products(navHostController: NavHostController, cartViewModel: CartViewModel)
                         Text("No products available.", modifier = Modifier.align(Alignment.Center))
                     }
                     else -> {
-                        Column(
+                        LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(Color.White)
                         ) {
-                            Text(
-                                text = "Discover what we have for you.",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(15.dp)
-                            )
-                            products.forEach { product ->
+                            item {
+                                Text(
+                                    text = "Discover what we have for you.",
+                                    fontSize = 20.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    modifier = Modifier.padding(15.dp)
+                                )
+                            }
+                            items(products) { product ->
                                 ProductItem(product = product) {
                                     selectedProduct.value = product
                                 }
@@ -134,7 +136,8 @@ fun ProductItem(
             .padding(10.dp)
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ){
         Row(
             modifier = Modifier
