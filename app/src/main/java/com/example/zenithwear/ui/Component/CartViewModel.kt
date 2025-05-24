@@ -41,6 +41,16 @@ class CartViewModel : ViewModel() {
     fun isProductInFavorites(product: Product): Boolean {
         return _favoriteProducts.contains(product)
     }
+
+    // Alternar estado favorito (agregar o eliminar)
+    fun toggleFavorite(product: Product) {
+        if (isProductInFavorites(product)) {
+            removeProductFromFavorites(product)
+        } else {
+            addProductToFavorites(product)
+        }
+    }
+
     fun clearCart() {
         _cartProducts.clear()
     }
