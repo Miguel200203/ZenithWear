@@ -15,8 +15,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.zenithwear.ui.theme.ZenithWearTheme
 import com.example.zenithwear.ui.Component.CartViewModel
+import com.example.zenithwear.ui.theme.ZenithWearTheme
 import com.example.zenithwear.ui.Screen.Brands
 import com.example.zenithwear.ui.Screen.Cart
 import com.example.zenithwear.ui.Screen.Categories
@@ -33,6 +33,7 @@ import com.example.zenithwear.ui.Screen.ChangePasswordScreen
 import com.example.zenithwear.ui.Screen.VerificationCodeScreen
 import com.example.zenithwear.ui.Screen.PersonalInformation
 import com.example.zenithwear.ui.Screen.ConfirmPasswordScreen
+import com.example.zenithwear.ui.Screen.ConfirmPurchase
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,5 +78,6 @@ fun SetupNavGraph(navController: NavHostController, cartViewModel: CartViewModel
         composable("flash_sale") { Products(navController, cartViewModel) }
         composable("new_arrivals") { Brands(navController, cartViewModel) }
         composable("vip_event") { Categories(navController, cartViewModel) }
-    }
+        composable ("confirm"){ ConfirmPurchase(navController, cartViewModel) }
+        }
 }

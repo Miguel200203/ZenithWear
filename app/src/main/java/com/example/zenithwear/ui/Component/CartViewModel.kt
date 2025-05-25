@@ -3,28 +3,41 @@ package com.example.zenithwear.ui.Component
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import com.example.zenithwear.data.Model.Product
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class CartViewModel : ViewModel() {
     // Lista de productos en el carrito
-    private val _cartProducts = mutableStateListOf<Product>()
-    val cartProducts: List<Product> get() = _cartProducts
+    private val _cartProducts = MutableStateFlow<List<Product>>(emptyList())
+    val cartProducts: StateFlow<List<Product>> = _cartProducts.asStateFlow()
 
-    // Lista de productos favoritos
-    private val _favoriteProducts = mutableStateListOf<Product>()
-    val favoriteProducts: List<Product> get() = _favoriteProducts
 
-    // Agregar producto al carrito
     fun addProductToCart(product: Product) {
-        if (!_cartProducts.contains(product)) {
-            _cartProducts.add(product)
+        _cartProducts.update { currentList ->
+            if (currentList.none { it.id == product.id }) {
+                currentList + product
+            } else {
+                currentList
+            }
         }
     }
 
-    // Eliminar producto del carrito
     fun removeProductFromCart(product: Product) {
-        _cartProducts.remove(product)
+        _cartProducts.update { currentList ->
+            currentList.filterNot { it.id == product.id }
+        }
     }
 
+
+
+    private val _favoriteProducts = mutableStateListOf<Product>()
+    val favoriteProducts: List<Product> get() = _favoriteProducts
+
+    fun clearCart() {
+        _cartProducts.value = emptyList() // Limpia el carrito
+    }
     // Agregar producto a favoritos
     fun addProductToFavorites(product: Product) {
         if (!_favoriteProducts.contains(product)) {
@@ -51,7 +64,4 @@ class CartViewModel : ViewModel() {
         }
     }
 
-    fun clearCart() {
-        _cartProducts.clear()
-    }
 }
