@@ -70,6 +70,9 @@ dependencies {
     implementation(libs.androidx.media3.common.ktx)
     implementation("io.coil-kt:coil-compose:2.2.2")
 
+    //implementation "androidx.biometric:biometric:1.1.0"
+    implementation (libs.androidx.biometric)
+
     // Retrofit para conectar con el backend
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")

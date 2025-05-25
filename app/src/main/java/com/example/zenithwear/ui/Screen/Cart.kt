@@ -111,7 +111,7 @@ fun Cart(navController: NavHostController, cartViewModel: CartViewModel) {
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = { /* Acción al confirmar compra */ },
+                onClick = { navController.navigate("confirm") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
