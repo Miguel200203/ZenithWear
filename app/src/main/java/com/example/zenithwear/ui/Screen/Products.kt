@@ -1,5 +1,6 @@
 package com.example.zenithwear.ui.Screen
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -56,9 +58,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import com.example.zenithwear.R
 import com.example.zenithwear.data.Model.ModelProduct
+import com.example.zenithwear.data.Model.NotificationHelper
 import com.example.zenithwear.ui.Component.CartViewModel
 import com.example.zenithwear.data.Model.ProductsData
 import com.example.zenithwear.data.Model.Product
@@ -164,21 +168,25 @@ fun ProductItem(
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 fun DescripcionProductoPantallaCompleta(
     product: Product,
     onBack: () -> Unit,
     cartViewModel: CartViewModel
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
-    ){
+    ) {
         IconButton(onClick = onBack) {
             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
         }
+
         Image(
             painter = painterResource(id = getDrawableResource(product.image)),
             contentDescription = product.title,
@@ -205,19 +213,31 @@ fun DescripcionProductoPantallaCompleta(
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
-        ){
+        ) {
             IconButton(onClick = {
-                if(cartViewModel.isProductInFavorites(product)){
+                if (cartViewModel.isProductInFavorites(product)) {
                     cartViewModel.removeProductFromFavorites(product)
-                } else{
+                    Log.d("NotificationTest", "Producto removido de favoritos: ${product.title}")
+                } else {
                     cartViewModel.addProductToFavorites(product)
+                    Log.d("NotificationTest", "Producto agregado a favoritos: ${product.title}")
+
+                    try {
+                        NotificationHelper.showAddedToFavoritesNotification(
+                            context = context,
+                            productTitle = product.title
+                        )
+                        Log.d("NotificationTest", "Notificación enviada para: ${product.title}")
+                    } catch (e: Exception) {
+                        Log.e("NotificationTest", "Error al enviar notificación", e)
+                    }
                 }
             }) {
                 Icon(
-                    imageVector = if(cartViewModel.isProductInFavorites(product))
-                    Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
+                    imageVector = if (cartViewModel.isProductInFavorites(product))
+                        Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = "Favorite",
-                    tint = if(cartViewModel.isProductInFavorites(product)) Color.Red else Color.Gray
+                    tint = if (cartViewModel.isProductInFavorites(product)) Color.Red else Color.Gray
                 )
             }
 

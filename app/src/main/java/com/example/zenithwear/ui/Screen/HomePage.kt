@@ -49,6 +49,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,23 +92,9 @@ fun HomePage (navHostController: NavHostController, cartViewModel: CartViewModel
 
     val MenuOptions = arrayOf(
         MenuModel(1, "Home", "HomePage", "",ImageVector.vectorResource(id = R.drawable.icono2)),
-        MenuModel(2, "IA", "IA", "", Icons.Filled.Star, listOf(
-        MenuModel(3, " Dress for the occasion", "IA", "", Icons.Filled.ArrowForward),
-        MenuModel(4, "Clothing according to the weather", "IA", "", Icons.Filled.ArrowForward),
-        MenuModel(5, "Other", "IA", "", Icons.Filled.ArrowForward) ) ),
-        MenuModel(6, "Products", "Products", "", Icons.Filled.ArrowDropDown, listOf(
-        MenuModel(7, "Men's", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(8, "Women's", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(9, "kids", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(10, "Collections", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(11, "Footwear", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(12, "Accessories", "Products", "", Icons.Filled.KeyboardArrowRight),
-        MenuModel(13, "Sportwear", "Products", "", Icons.Filled.KeyboardArrowRight)) ),
-        MenuModel(14, "Brands", "Products", "", Icons.Filled.Add, listOf(
-        MenuModel(15, "Adidas", "Products", "", ImageVector.vectorResource(id = R.drawable.adidass)),
-        MenuModel(16, "Nike", "Products", "", ImageVector.vectorResource(id = R.drawable.nike2)),
-        MenuModel(17, "Under Armour", "Products","", ImageVector.vectorResource(id = R.drawable.under_armour_logo_10)))),
-    )
+        MenuModel(2, "Products", "vip_event", "", Icons.Filled.ArrowDropDown),
+        MenuModel(3, "Brands", "new_arrivals", "", Icons.Filled.Add),
+        )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -251,65 +238,37 @@ fun marca(navHostController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Bars(navHostController: NavHostController) {
-    var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.secondary
-            ),
-            title = {
-                if (showSearchBar) {
-                    TextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 8.dp),
-                        placeholder = { Text("Buscar...") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                navHostController.navigate("Search")
-                                showSearchBar = false
-                            }
-                        )
-                    )
-                } else {
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.icono),
-                            contentDescription = "Logo de la app",
-                            modifier = Modifier
-                                .size(45.dp)
-                                .padding(end = 25.dp)
-                        )
-                        Text("ZenithWear", fontSize = 18.sp)
-                    }
-                }
-            },
-            actions = {
-                if (showSearchBar) {
-
-                    IconButton(onClick = { showSearchBar = false }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Cerrar búsqueda", tint = Color.White)
-                    }
-                } else {
-
-                    IconButton(onClick = { showSearchBar = true }) {
-                        Icon(Icons.Filled.Search, contentDescription = "Buscar", tint = Color.White)
-                    }
-                }
+    TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.secondary
+        ),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.icono),
+                    contentDescription = "Logo de la app",
+                    modifier = Modifier
+                        .size(45.dp)
+                        .padding(end = 25.dp)
+                )
+                Text("ZenithWear", fontSize = 18.sp)
             }
-        )
+        },
+        actions = {
+            IconButton(onClick = {
+                navHostController.navigate("Search")
+            }) {
+                Icon(Icons.Filled.Search, contentDescription = "Buscar", tint = Color.White)
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
-    val cartItemCount = cartViewModel.cartProducts.size // Obtén la cantidad de productos en el carrito
+    val cartItems by cartViewModel.cartProducts.collectAsState()
 
     BottomAppBar(
         containerColor = Color.White,
@@ -319,13 +278,13 @@ fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
             modifier = Modifier.weight(1f),
             onClick = { navHostController.navigate("HomePage") }
         ) {
-            Icon(Icons.Filled.Home, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
+            Icon(Icons.Filled.Home, contentDescription = "", tint = Color.Gray)
         }
         IconButton(
             modifier = Modifier.weight(1f),
             onClick = { navHostController.navigate("Favorite") }
         ) {
-            Icon(Icons.Filled.FavoriteBorder, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
+            Icon(Icons.Filled.FavoriteBorder, contentDescription = "", tint = Color.Gray)
         }
         IconButton(
             modifier = Modifier.weight(1f),
@@ -333,31 +292,27 @@ fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
         ) {
             BadgedBox(
                 badge = {
-                    if (cartItemCount > 0) {
+                    if (cartItems.isNotEmpty()) {
                         Badge {
-                            Text(text = cartItemCount.toString())
+                            Text(text = cartItems.size.toString())
                         }
                     }
                 }
             ) {
-                Icon(
-                    Icons.Filled.ShoppingCart,
-                    contentDescription = "",
-                    tint = Color.Gray
-                )
+                Icon(Icons.Filled.ShoppingCart, contentDescription = "", tint = Color.Gray)
             }
         }
         IconButton(
             modifier = Modifier.weight(1f),
             onClick = { navHostController.navigate("Notification") }
         ) {
-            Icon(Icons.Filled.Notifications, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
+            Icon(Icons.Filled.Notifications, contentDescription = "", tint = Color.Gray)
         }
         IconButton(
             modifier = Modifier.weight(1f),
             onClick = { navHostController.navigate("Profile") }
         ) {
-            Icon(Icons.Filled.Person, contentDescription = "", tint = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
+            Icon(Icons.Filled.Person, contentDescription = "", tint = Color.Gray)
         }
     }
 }
