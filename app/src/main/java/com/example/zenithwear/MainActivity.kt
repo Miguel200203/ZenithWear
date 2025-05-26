@@ -1,24 +1,29 @@
 package com.example.zenithwear
 
 import IA
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import com.example.zenithwear.data.Model.NotificationHelper
+import com.example.zenithwear.data.Model.ProductsData.allProducts
 import com.example.zenithwear.ui.Component.CartViewModel
 import com.example.zenithwear.ui.theme.ZenithWearTheme
 import com.example.zenithwear.ui.Screen.Brands
@@ -41,22 +46,54 @@ import com.example.zenithwear.ui.Screen.ConfirmPurchase
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()  // Si estás utilizando edge-to-edge
-        setContent {
-            ZenithWearTheme {
-                ComposableMultiScreenApp()
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                Log.d("NotificationPermission", "Permiso de notificaciones concedido")
+                NotificationHelper.createChannel(this)
+            } else {
+                Log.d("NotificationPermission", "Permiso de notificaciones denegado")
             }
         }
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        NotificationHelper.createChannel(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                NotificationHelper.createChannel(this)
+            } else {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            NotificationHelper.createChannel(this)
+        }
+        enableEdgeToEdge()  // Si estás utilizando edge-to-edge
+        val destination = intent?.getStringExtra("destination")
+        setContent {
+            ZenithWearTheme {
+                ComposableMultiScreenApp(destination)
+            }
+        }
     }
 }
 
 @Composable
-fun ComposableMultiScreenApp(){
+fun ComposableMultiScreenApp(destination: String?) {
     val navController = rememberNavController()
-    val cartViewModel: CartViewModel = viewModel() // Crea el ViewModel
+    val cartViewModel: CartViewModel = viewModel()
+
+    LaunchedEffect(destination) {
+        destination?.let {
+            navController.navigate(it) {
+                popUpTo(0)
+                launchSingleTop = true
+            }
+        }
+    }
     SetupNavGraph(navController = navController, cartViewModel = cartViewModel)
 }
 

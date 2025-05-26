@@ -74,7 +74,9 @@ dependencies {
     implementation (libs.androidx.biometric)
 
     //Notifications implementation
-    implementation ("androidx.work:work-runtime-ktx:2.9.0")
+    implementation ("androidx.core:core-ktx:1.12.0")
+    implementation ("androidx.compose.material:material-icons-extended")
+
 
     // Retrofit para conectar con el backend
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

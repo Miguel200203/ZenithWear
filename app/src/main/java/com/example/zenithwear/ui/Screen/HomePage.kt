@@ -238,60 +238,33 @@ fun marca(navHostController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Bars(navHostController: NavHostController) {
-    var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.secondary
-            ),
-            title = {
-                if (showSearchBar) {
-                    TextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 8.dp),
-                        placeholder = { Text("Buscar...") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                navHostController.navigate("Search")
-                                showSearchBar = false
-                            }
-                        )
-                    )
-                } else {
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.icono),
-                            contentDescription = "Logo de la app",
-                            modifier = Modifier
-                                .size(45.dp)
-                                .padding(end = 25.dp)
-                        )
-                        Text("ZenithWear", fontSize = 18.sp)
-                    }
-                }
-            },
-            actions = {
-                if (showSearchBar) {
-
-                    IconButton(onClick = { showSearchBar = false }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Cerrar búsqueda", tint = Color.White)
-                    }
-                } else {
-
-                    IconButton(onClick = { showSearchBar = true }) {
-                        Icon(Icons.Filled.Search, contentDescription = "Buscar", tint = Color.White)
-                    }
-                }
+    TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.secondary
+        ),
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.icono),
+                    contentDescription = "Logo de la app",
+                    modifier = Modifier
+                        .size(45.dp)
+                        .padding(end = 25.dp)
+                )
+                Text("ZenithWear", fontSize = 18.sp)
             }
-        )
+        },
+        actions = {
+            IconButton(onClick = {
+                navHostController.navigate("Search")
+            }) {
+                Icon(Icons.Filled.Search, contentDescription = "Buscar", tint = Color.White)
+            }
+        }
+    )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Bars2(navHostController: NavHostController, cartViewModel: CartViewModel) {
