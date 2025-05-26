@@ -3,8 +3,10 @@ package com.example.zenithwear.ui.Screen
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +32,8 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
     var isEditing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
 
     LaunchedEffect(true) {
         try {
@@ -55,58 +60,37 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
                 CircularProgressIndicator()
             }
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(20.dp))
-
-                AsyncImage(
-                    model = R.drawable.fotoperfil,
-                    contentDescription = "Profile Picture",
+            if (isPortrait) {
+                Column(
                     modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "${user?.name ?: ""} ${user?.lastName ?: ""}",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .padding(innerPadding)
+                        .verticalScroll(rememberScrollState()), // SCROLL AÑADIDO AQUÍ
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        ProfileInfoItem(label = "Address", value = user!!.address ?: "")
-                        ProfileInfoItem(label = "Phone", value = user!!.phoneNumber ?: "")
-                        ProfileInfoItem(label = "Date of Birth", value = user!!.dateOfBirth ?: "")
-                        ProfileInfoItem(label = "Gender", value = user!!.gender ?: "")
-                    }
+                    ProfileContent(user, navHostController, onEditClick = { isEditing = true })
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { isEditing = true },
+            } else {
+                Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .padding(innerPadding),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Edit Profile")
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()), // SCROLL AÑADIDO AQUÍ
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        ProfileContent(user, navHostController, onEditClick = { isEditing = true })
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
                 }
             }
         }
@@ -137,6 +121,70 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
         )
     }
 }
+
+@Composable
+fun ProfileContent(user: UserProfile?, navHostController: NavHostController, onEditClick: () -> Unit) {
+    Spacer(modifier = Modifier.height(20.dp))
+
+    AsyncImage(
+        model = R.drawable.fotoperfil,
+        contentDescription = "Profile Picture",
+        modifier = Modifier
+            .size(100.dp)
+            .clip(CircleShape),
+        contentScale = ContentScale.Crop
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Text(
+        text = "${user?.name ?: ""} ${user?.lastName ?: ""}",
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ProfileInfoItem(label = "Address", value = user!!.address ?: "")
+            ProfileInfoItem(label = "Phone", value = user.phoneNumber ?: "")
+            ProfileInfoItem(label = "Date of Birth", value = user.dateOfBirth ?: "")
+            ProfileInfoItem(label = "Gender", value = user.gender ?: "")
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Button(
+        onClick = onEditClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(text = "Edit Profile")
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Button(
+        onClick = { navHostController.navigate("Home_Screen") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(text = "Login")
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditUserProfileDialog(
@@ -144,7 +192,6 @@ fun EditUserProfileDialog(
     onDismiss: () -> Unit,
     onSave: (UserProfile) -> Unit
 ) {
-    // Variables locales con los valores actuales del usuario
     var name by remember { mutableStateOf(user.name) }
     var lastName by remember { mutableStateOf(user.lastName) }
     var address by remember { mutableStateOf(user.address) }
@@ -166,12 +213,11 @@ fun EditUserProfileDialog(
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
-
-                    onSave(UserProfile(user.id, name, lastName, address, phoneNumber, dateOfBirth, gender))
-                }
-            ) {
+            Button(onClick = {
+                onSave(
+                    UserProfile(user.id, name, lastName, address, phoneNumber, dateOfBirth, gender)
+                )
+            }) {
                 Text("Save")
             }
         },
@@ -182,6 +228,7 @@ fun EditUserProfileDialog(
         }
     )
 }
+
 @Composable
 fun ProfileInfoItem(label: String, value: String?) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
