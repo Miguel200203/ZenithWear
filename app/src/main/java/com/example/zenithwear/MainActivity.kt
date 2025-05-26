@@ -15,6 +15,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.zenithwear.ui.Component.CartViewModel
 import com.example.zenithwear.ui.theme.ZenithWearTheme
 import com.example.zenithwear.ui.Screen.Brands
@@ -34,6 +38,7 @@ import com.example.zenithwear.ui.Screen.VerificationCodeScreen
 import com.example.zenithwear.ui.Screen.PersonalInformation
 import com.example.zenithwear.ui.Screen.ConfirmPasswordScreen
 import com.example.zenithwear.ui.Screen.ConfirmPurchase
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 ComposableMultiScreenApp()
             }
         }
+
     }
 }
 
@@ -56,7 +62,7 @@ fun ComposableMultiScreenApp(){
 
 @Composable
 fun SetupNavGraph(navController: NavHostController, cartViewModel: CartViewModel){
-    NavHost(navController = navController, startDestination = "Products"){
+    NavHost(navController = navController, startDestination = "Login"){
         composable("Home_Screen") { HomeScreen(navController) }
         composable("Login") { Login(navController) }
         composable("SignUp") { SignUp(navController) }
@@ -68,8 +74,6 @@ fun SetupNavGraph(navController: NavHostController, cartViewModel: CartViewModel
         composable("IA") { IA(navController, cartViewModel) }
         composable("Notification") { Notification(navController, cartViewModel) }
         composable("Products") { Products(navController, cartViewModel) }
-        composable("Brands") { Brands(navController, cartViewModel) }
-        composable("Categories") { Categories(navController, cartViewModel) }
         composable("Profile") { Profile(navController, cartViewModel) }
         composable("Search") { Search(navController, cartViewModel) }
         composable("VerificationCodeScreen") { VerificationCodeScreen(navController) }
