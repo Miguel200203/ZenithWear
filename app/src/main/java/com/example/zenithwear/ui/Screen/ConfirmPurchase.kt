@@ -1,8 +1,13 @@
 package com.example.zenithwear.ui.Screen
 
+import android.Manifest
+import android.app.DatePickerDialog
+import android.content.ContentValues
 import android.content.Context
+import android.provider.CalendarContract
 import android.widget.Toast
-import androidx.biometric.BiometricPrompt
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,19 +24,45 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import com.example.zenithwear.ui.Component.CartViewModel
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfirmPurchase(navHostController: NavHostController, cartViewModel: CartViewModel) {
     val context = LocalContext.current
-    val activity = context.findFragmentActivity()
-
+    val activity = context as? FragmentActivity
+    var confirmarCompraPendiente by remember { mutableStateOf(false) }
     val cartProducts by cartViewModel.cartProducts.collectAsState(initial = emptyList())
     val totalPrice = cartProducts.sumOf { it.price?.toDouble() ?: 0.0 }
 
     var paymentMethod by remember { mutableStateOf("Cash") }
     var cardNumber by remember { mutableStateOf("") }
     val isCardValid = cardNumber.length == 16
+
+    var fechaEntregaTexto by remember { mutableStateOf("") }
+    var fechaEntregaMillis by remember { mutableStateOf<Long?>(null) }
+
+    val launcherPermisoCalendario = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permisos ->
+        val concedido = permisos[Manifest.permission.READ_CALENDAR] == true &&
+                permisos[Manifest.permission.WRITE_CALENDAR] == true
+
+        if (concedido && confirmarCompraPendiente && fechaEntregaMillis != null) {
+            val fin = fechaEntregaMillis!! + 60 * 60 * 1000
+            agregarEvento(
+                context,
+                titulo = "Entrega de compra",
+                descripcion = "Tu producto llegará este día",
+                inicio = fechaEntregaMillis!!,
+                fin = fin
+            )
+            Toast.makeText(context, "Compra confirmada. Evento creado.", Toast.LENGTH_LONG).show()
+            confirmarCompraPendiente = false
+        } else {
+            Toast.makeText(context, "Permisos de calendario requeridos", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -112,70 +143,66 @@ fun ConfirmPurchase(navHostController: NavHostController, cartViewModel: CartVie
 
             Button(
                 onClick = {
+                    val hoy = Calendar.getInstance()
+                    hoy.add(Calendar.DAY_OF_YEAR, 3)
+
+                    DatePickerDialog(
+                        context,
+                        { _, year, month, dayOfMonth ->
+                            val cal = Calendar.getInstance().apply {
+                                set(year, month, dayOfMonth, 10, 0)
+                            }
+                            fechaEntregaMillis = cal.timeInMillis
+                            fechaEntregaTexto = "$dayOfMonth/${month + 1}/$year"
+                        },
+                        hoy.get(Calendar.YEAR),
+                        hoy.get(Calendar.MONTH),
+                        hoy.get(Calendar.DAY_OF_MONTH)
+                    ).show()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (fechaEntregaTexto.isNotEmpty()) "📅 Entrega: $fechaEntregaTexto" else "📅 Seleccionar fecha de entrega")
+            }
+
+            Button(
+                onClick = {
                     if (paymentMethod == "Card" && !isCardValid) {
                         Toast.makeText(context, "Please enter a valid 16-digit card number.", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 
-                    if (activity != null) {
-                        showBiometricPrompt(
-                            activity = activity,
-                            onSuccess = {
-                                Toast.makeText(context, "Purchase Confirmed!", Toast.LENGTH_LONG).show()
-                                // Aquí puedes limpiar el carrito o navegar a otra pantalla
-                            },
-                            onError = { error ->
-                                Toast.makeText(context, "Authentication failed: $error", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    } else {
-                        Toast.makeText(context, "No se pudo obtener la actividad para autenticación", Toast.LENGTH_SHORT).show()
+                    if (fechaEntregaMillis == null) {
+                        Toast.makeText(context, "Selecciona la fecha de entrega", Toast.LENGTH_SHORT).show()
+                        return@Button
                     }
+
+                    confirmarCompraPendiente = true
+                    launcherPermisoCalendario.launch(
+                        arrayOf(
+                            Manifest.permission.READ_CALENDAR,
+                            Manifest.permission.WRITE_CALENDAR
+                        )
+                    )
                 },
                 enabled = paymentMethod == "Cash" || isCardValid,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Confirm")
             }
+
         }
     }
 }
 
-// Función para mostrar el prompt biométrico con androidx.biometric
-fun showBiometricPrompt(
-    activity: FragmentActivity,
-    onSuccess: () -> Unit,
-    onError: (String) -> Unit
-) {
-    val executor = ContextCompat.getMainExecutor(activity)
-    val biometricPrompt = BiometricPrompt(activity, executor,
-        object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                super.onAuthenticationSucceeded(result)
-                onSuccess()
-            }
-
-            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                super.onAuthenticationError(errorCode, errString)
-                onError(errString.toString())
-            }
-        })
-
-    val promptInfo = BiometricPrompt.PromptInfo.Builder()
-        .setTitle("Authenticate Purchase")
-        .setSubtitle("Use your fingerprint or device PIN")
-        .setNegativeButtonText("Cancel")
-        .build()
-
-    biometricPrompt.authenticate(promptInfo)
-}
-
-// Helper para obtener FragmentActivity desde un Context
-fun Context.findFragmentActivity(): FragmentActivity? {
-    var ctx = this
-    while (ctx is android.content.ContextWrapper) {
-        if (ctx is FragmentActivity) return ctx
-        ctx = ctx.baseContext
+fun agregarEvento(context: Context, titulo: String, descripcion: String, inicio: Long, fin: Long) {
+    val values = ContentValues().apply {
+        put(CalendarContract.Events.DTSTART, inicio)
+        put(CalendarContract.Events.DTEND, fin)
+        put(CalendarContract.Events.TITLE, titulo)
+        put(CalendarContract.Events.DESCRIPTION, descripcion)
+        put(CalendarContract.Events.CALENDAR_ID, 1)
+        put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
     }
-    return null
+    context.contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
 }
