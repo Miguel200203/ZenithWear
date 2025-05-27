@@ -1,151 +1,180 @@
 package com.example.zenithwear.ui.Screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.delay
+import com.example.zenithwear.data.Model.UserProfile
+import com.example.zenithwear.data.Model.network.RetrofitClient
 import kotlinx.coroutines.launch
 
 @Composable
 fun ChangePasswordScreen(navHostController: NavHostController) {
+    var username by remember { mutableStateOf(TextFieldValue("")) }
+    var userFound by remember { mutableStateOf<UserProfile?>(null) }
     var newPassword by remember { mutableStateOf(TextFieldValue("")) }
     var confirmPassword by remember { mutableStateOf(TextFieldValue("")) }
-    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope() // Crear un ámbito de corrutina
+    val scope = rememberCoroutineScope()
 
     LazyColumn(
         modifier = Modifier
-            .background(color = Color.White)
-            .fillMaxSize(),
+            .background(Color.White)
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         item {
-            Text(
-                text = "Change Password",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
+            Text("Change Password", fontSize = 24.sp, modifier = Modifier.padding(bottom = 16.dp))
         }
-        item {
-            cuadroPassword1(
-                value = newPassword,
-                onValueChange = { newValue ->
-                    newPassword = newValue
-                    showError = false
-                },
-                isError = showError && newPassword.text != confirmPassword.text
-            )
-        }
-        item {
-            cuadroPassword1(
-                value = confirmPassword,
-                onValueChange = { newValue ->
-                    confirmPassword = newValue
-                    showError = false
-                },
-                isError = showError && newPassword.text != confirmPassword.text
-            )
-        }
-        item {
-            if (showError && newPassword.text != confirmPassword.text) {
-                Text(
-                    text = "Passwords do not match",
-                    color = Color.Red,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-        }
-        item {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(16.dp),
-                    color = Color.Black
-                )
-                Text(
-                    text = "Changing password...",
-                    fontSize = 16.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(8.dp)
-                )
-            } else {
-                Button(
-                    modifier = Modifier.padding(16.dp)
-                        .width(310.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White
-                    ),
-                    onClick = {
-                        if (newPassword.text == confirmPassword.text) {
-                            isLoading = true
 
-                            scope.launch {
-                                delay(3000)
-                                navHostController.navigate("Login")
+        item {
+            OutlinedTextField(
+                value = username,
+                onValueChange = {
+                    username = it
+                    errorMessage = null
+                },
+                label = { Text("Enter your username") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        item {
+            Button(
+                onClick = {
+                    scope.launch {
+                        isLoading = true
+                        try {
+                            val response = RetrofitClient.apiService.getUsers()
+                            if (response.isSuccessful) {
+                                val users = response.body() ?: emptyList()
+                                val user = users.find { it.user == username.text }
+                                if (user != null) {
+                                    userFound = user
+                                } else {
+                                    errorMessage = "User not found"
+                                    userFound = null
+                                }
+                            } else {
+                                errorMessage = "Failed to connect to server"
                             }
-                        } else {
-                            showError = true
+                        } catch (e: Exception) {
+                            errorMessage = "Error: ${e.localizedMessage}"
+                        } finally {
+                            isLoading = false
                         }
                     }
-                ) {
-                    Text(
-                        text = "Change Password",
-                        fontSize = 18.sp,
-                        color = Color.White
+                },
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth(),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
                     )
+                } else {
+                    Text("Confirm", fontSize = 18.sp)
                 }
             }
         }
+
+        if (userFound != null) {
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = {
+                        newPassword = it
+                        errorMessage = null
+                    },
+                    label = { Text("New Password") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = {
+                        confirmPassword = it
+                        errorMessage = null
+                    },
+                    label = { Text("Confirm Password") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            if (newPassword.text != confirmPassword.text) {
+                                errorMessage = "Passwords do not match"
+                                return@launch
+                            }
+                            if (newPassword.text.isBlank()) {
+                                errorMessage = "Password cannot be empty"
+                                return@launch
+                            }
+
+                            try {
+                                val updatedUser = userFound!!.copy(password = newPassword.text)
+                                val response = RetrofitClient.apiService.updateUser(userFound!!.id!!, updatedUser)
+                                if (response.isSuccessful) {
+                                    // Navega a Login sin leer body para evitar error
+                                    navHostController.navigate("Login") {
+                                        popUpTo("ChangePasswordScreen") { inclusive = true }
+                                    }
+                                } else {
+                                    errorMessage = "Failed to update password"
+                                }
+                            } catch (e: Exception) {
+                                errorMessage = " "
+                                navHostController.navigate("Login") {
+                                    popUpTo("ChangePasswordScreen") { inclusive = true }
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text("Update Password", fontSize = 18.sp)
+                }
+            }
+        }
+
+        item {
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.Red,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            }
+        }
     }
-}
-@Composable
-fun cuadroPassword1(
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    isError: Boolean
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text("Password") },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.White,
-            focusedContainerColor = Color.White,
-            focusedIndicatorColor = if (isError) Color.Red else Color.Blue, // Cambiar color si hay error
-            unfocusedIndicatorColor = if (isError) Color.Red else Color.Gray
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        isError = isError
-    )
 }

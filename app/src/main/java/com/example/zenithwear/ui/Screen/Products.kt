@@ -1,9 +1,11 @@
 package com.example.zenithwear.ui.Screen
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,8 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -27,6 +33,7 @@ import kotlinx.coroutines.delay
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -35,12 +42,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.text.font.FontWeight
@@ -48,60 +58,81 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
+import com.example.zenithwear.R
 import com.example.zenithwear.data.Model.ModelProduct
-import com.example.zenithwear.data.Model.ProductsData
+import com.example.zenithwear.data.Model.NotificationHelper
 import com.example.zenithwear.ui.Component.CartViewModel
+import com.example.zenithwear.data.Model.ProductsData
+import com.example.zenithwear.data.Model.Product
+import com.example.zenithwear.data.Model.network.RetrofitClient
 
 @Composable
 fun Products(navHostController: NavHostController, cartViewModel: CartViewModel) {
-    val selectedProduct = remember { mutableStateOf<ModelProduct?>(null) }
+    val selectedProduct = remember { mutableStateOf<Product?>(null) }
+    val scope = rememberCoroutineScope()
+
+    val productsState = produceState<List<Product>?>(initialValue = null){
+        value = try{
+            val response = RetrofitClient.apiService.getProducts()
+            if(response.isSuccessful) response.body() else emptyList()
+        } catch(e: Exception){
+            emptyList()
+        }
+    }
 
     Scaffold(
         topBar = { Bars(navHostController) },
         bottomBar = { Bars2(navHostController, cartViewModel) }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .background(color = Color.White)
-                .fillMaxSize()
-                .padding(innerPadding),
-            horizontalAlignment = Alignment.Start
-        ) {
-            item {
-                Text(
-                    text = "Discover what we have for you.",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(15.dp)
-                )
-            }
-            items(ProductsData.allProducts, key = { product -> product.id }) { product ->
-                ProductItem(
-                    product = product,
-                    onClick = {
-                        println("Producto seleccionado: ${product.title}")
-                        selectedProduct.value = product
+        Box(modifier = Modifier.padding(innerPadding)) {
+            if (selectedProduct.value == null) {
+                val products = productsState.value
+                when {
+                    products == null -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
+                    products.isEmpty() -> {
+                        Text("No products available.", modifier = Modifier.align(Alignment.Center))
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White)
+                        ) {
+                            item {
+                                Text(
+                                    text = "Discover what we have for you.",
+                                    fontSize = 20.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    modifier = Modifier.padding(15.dp)
+                                )
+                            }
+                            items(products) { product ->
+                                ProductItem(product = product) {
+                                    selectedProduct.value = product
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                DescripcionProductoPantallaCompleta(
+                    product = selectedProduct.value!!,
+                    onBack = { selectedProduct.value = null },
+                    cartViewModel = cartViewModel
                 )
             }
-        }
-        selectedProduct.value?.let { product ->
-            DescripcionProducto(
-                product = product,
-                onDismiss = { selectedProduct.value = null },
-                navHostController = navHostController,
-                cartViewModel = cartViewModel
-            )
         }
     }
 }
 
 @Composable
 fun ProductItem(
-    product: ModelProduct,
-    onClick: () -> Unit,
-    onRemove: (() -> Unit)? = null // Parámetro opcional para eliminar
+    product: Product,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -109,16 +140,16 @@ fun ProductItem(
             .padding(10.dp)
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(10.dp)
-    ) {
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ){
         Row(
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
-        ) {
+        ){
             Image(
-                painter = painterResource(id = product.image),
+                painter = painterResource(id = getDrawableResource(product.image)),
                 contentDescription = product.title,
                 modifier = Modifier
                     .size(80.dp)
@@ -126,139 +157,115 @@ fun ProductItem(
             )
             Spacer(modifier = Modifier.width(10.dp))
             Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(text = product.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(text = "Categoría: ${product.categoria}", fontSize = 14.sp)
-                Text(text = "Precio: $${product.precio}", fontSize = 14.sp)
-            }
-            // Mostrar el botón de eliminar solo si onRemove no es nulo
-            if (onRemove != null) {
-                IconButton(
-                    onClick = onRemove
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar de favoritos"
-                    )
-                }
+                modifier = Modifier
+                    .weight(1f)
+            ){
+                Text(product.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("Category: ${product.category}", fontSize = 14.sp)
+                Text("Price: $${product.price}", fontSize = 14.sp)
             }
         }
     }
 }
+
+@OptIn(UnstableApi::class)
 @Composable
-fun DescripcionProducto(
-    product: ModelProduct,
-    onDismiss: () -> Unit,
-    navHostController: NavHostController,
+fun DescripcionProductoPantallaCompleta(
+    product: Product,
+    onBack: () -> Unit,
     cartViewModel: CartViewModel
 ) {
-    // Verifica si el producto está en favoritos
-    val isFavorite = cartViewModel.isProductInFavorites(product)
+    val context = LocalContext.current
 
-    // Estado para controlar el ícono de favoritos
-    var favoriteIcon by remember { mutableStateOf(if (isFavorite) Icons.Filled.Favorite else Icons.Default.FavoriteBorder) }
-    var favoriteIconColor by remember { mutableStateOf(if (isFavorite) Color.Red else Color.Gray) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+        }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = product.title, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-        text = {
-            Column {
-                Image(
-                    painter = painterResource(id = product.image),
-                    contentDescription = "Imagen del producto",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                )
+        Image(
+            painter = painterResource(id = getDrawableResource(product.image)),
+            contentDescription = product.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .clip(RoundedCornerShape(10.dp))
+        )
 
-                Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "Price: $${product.precio}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+        Text(product.title, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        Text("Price: $${product.price}", fontSize = 18.sp)
+        Text("Category: ${product.category}", fontSize = 16.sp)
+        Text("Brand: ${product.brand ?: "Unknown"}", fontSize = 16.sp)
+        Text("Size: ${product.size}", fontSize = 16.sp)
+        Text("Available: ${product.available}", fontSize = 16.sp)
 
-                Text(
-                    text = "Category: ${product.categoria}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text("Description: ${product.description}", fontSize = 16.sp)
 
-                Text(
-                    text = "Brand: ${product.marca}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+        Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text = "Description: ${product.descripcion}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            IconButton(onClick = {
+                if (cartViewModel.isProductInFavorites(product)) {
+                    cartViewModel.removeProductFromFavorites(product)
+                    Log.d("NotificationTest", "Producto removido de favoritos: ${product.title}")
+                } else {
+                    cartViewModel.addProductToFavorites(product)
+                    Log.d("NotificationTest", "Producto agregado a favoritos: ${product.title}")
 
-                Text(
-                    text = "Size: ${product.talla}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                Text(
-                    text = "Available: ${product.disponibles}",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(
-                        onClick = {
-                            // Agrega o elimina el producto de favoritos
-                            if (isFavorite) {
-                                cartViewModel.removeProductFromFavorites(product)
-                                favoriteIcon = Icons.Default.FavoriteBorder
-                                favoriteIconColor = Color.Gray
-                            } else {
-                                cartViewModel.addProductToFavorites(product)
-                                favoriteIcon = Icons.Filled.Favorite
-                                favoriteIconColor = Color.Red
-                            }
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = favoriteIcon,
-                            contentDescription = "Add to favorites",
-                            tint = favoriteIconColor
+                    try {
+                        NotificationHelper.showAddedToFavoritesNotification(
+                            context = context,
+                            productTitle = product.title
                         )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            // Agrega el producto al carrito
-                            cartViewModel.addProductToCart(product)
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = "Add to cart"
-                        )
+                        Log.d("NotificationTest", "Notificación enviada para: ${product.title}")
+                    } catch (e: Exception) {
+                        Log.e("NotificationTest", "Error al enviar notificación", e)
                     }
                 }
+            }) {
+                Icon(
+                    imageVector = if (cartViewModel.isProductInFavorites(product))
+                        Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorite",
+                    tint = if (cartViewModel.isProductInFavorites(product)) Color.Red else Color.Gray
+                )
             }
-        },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("Close")
+
+            IconButton(onClick = {
+                cartViewModel.addProductToCart(product)
+            }) {
+                Icon(
+                    Icons.Default.ShoppingCart,
+                    contentDescription = "Cart"
+                )
             }
         }
-    )
+    }
+}
+
+fun getDrawableResource(imageId: Int): Int{
+    return when(imageId){
+        1 -> R.drawable.sudadera
+        2 -> R.drawable.ropah
+        3 -> R.drawable.ropam
+        4 -> R.drawable.ropak
+        5 -> R.drawable.collections
+        6 -> R.drawable.curry
+        7 -> R.drawable.footwear
+        8 -> R.drawable.samba
+        9 -> R.drawable.accessories
+        10 -> R.drawable.mochila
+        11 -> R.drawable.sportwear
+        else -> R.drawable.error
+    }
 }
