@@ -175,7 +175,7 @@ fun Login(navHostController: NavHostController) {
                 modifier = Modifier
                     .clickable {
                         if (isUsernameValid) {
-                            navHostController.navigate("VerificationCodeScreen")
+                            navHostController.navigate("ChangePasswordScreen")
                         }
                     }
                     .padding(8.dp),

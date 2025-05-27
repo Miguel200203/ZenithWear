@@ -240,7 +240,8 @@ fun SignUp(navHostController: NavHostController) {
                                     popUpTo("SignUpScreen") { inclusive = true }
                                 }
                             } else {
-                                usernameError = "Error creating account: ${createResponse.code()}"
+                                val errorBody = createResponse.errorBody()?.string()
+                                usernameError = "Error creating account: ${createResponse.code()}- $errorBody"
                                 isSaving = false
                             }
                         } catch (e: Exception) {
