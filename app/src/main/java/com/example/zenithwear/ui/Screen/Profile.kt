@@ -1,6 +1,5 @@
 package com.example.zenithwear.ui.Screen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,35 +20,32 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.zenithwear.R
+import com.example.zenithwear.data.Model.UserPreferences
 import com.example.zenithwear.data.Model.UserProfile
-import com.example.zenithwear.data.Model.network.RetrofitClient
 import com.example.zenithwear.ui.Component.CartViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) {
+fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel, userPreferences: UserPreferences) {
     var user by remember { mutableStateOf<UserProfile?>(null) }
     var isEditing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
-
-    LaunchedEffect(true) {
-        try {
-            val response = RetrofitClient.apiService.getUsers()
-            if (response.isSuccessful && !response.body().isNullOrEmpty()) {
-                user = response.body()?.first()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+    // Leer usuario guardado desde DataStore
+    LaunchedEffect(Unit) {
+        userPreferences.userFlow.collect {
+            user = it
         }
     }
+
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
 
     Scaffold(
         topBar = { Bars(navHostController) },
         bottomBar = { Bars2(navHostController, cartViewModel) }
     ) { innerPadding ->
+
         if (user == null) {
             Box(
                 modifier = Modifier
@@ -57,7 +53,7 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                Text("No user logged in")
             }
         } else {
             if (isPortrait) {
@@ -66,10 +62,28 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
                         .fillMaxSize()
                         .background(Color.White)
                         .padding(innerPadding)
-                        .verticalScroll(rememberScrollState()), // SCROLL AÑADIDO AQUÍ
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ProfileContent(user, navHostController, onEditClick = { isEditing = true })
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                userPreferences.clearUser()
+                                user = null
+                                navHostController.navigate("Home_Screen") {
+                                    popUpTo(0) { inclusive = true }
+                                    launchSingleTop = true
+                                } // Navega a login o pantalla inicial
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Text("Cerrar sesión")
+                    }
                 }
             } else {
                 Row(
@@ -84,11 +98,14 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
                         modifier = Modifier
                             .fillMaxHeight()
                             .weight(1f)
-                            .verticalScroll(rememberScrollState()), // SCROLL AÑADIDO AQUÍ
+                            .verticalScroll(rememberScrollState()),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         ProfileContent(user, navHostController, onEditClick = { isEditing = true })
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                 }
@@ -102,27 +119,15 @@ fun Profile(navHostController: NavHostController, cartViewModel: CartViewModel) 
             onDismiss = { isEditing = false },
             onSave = { updatedUser ->
                 scope.launch {
-                    try {
-                        val updateResponse = RetrofitClient.apiService.updateUser(user!!.id, updatedUser)
-                        if (updateResponse.isSuccessful) {
-                            val reloadResponse = RetrofitClient.apiService.getUsers()
-                            if (reloadResponse.isSuccessful && !reloadResponse.body().isNullOrEmpty()) {
-                                user = reloadResponse.body()!!.first()
-                            }
-                        } else {
-                            println("Error al actualizar: ${updateResponse.errorBody()?.string()}")
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    // Actualizar usuario en DataStore
+                    userPreferences.saveUser(updatedUser)
+                    user = updatedUser
                 }
                 isEditing = false
             }
         )
     }
-}
-
-@Composable
+}@Composable
 fun ProfileContent(user: UserProfile?, navHostController: NavHostController, onEditClick: () -> Unit) {
     Spacer(modifier = Modifier.height(20.dp))
 
@@ -153,10 +158,11 @@ fun ProfileContent(user: UserProfile?, navHostController: NavHostController, onE
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            ProfileInfoItem(label = "Address", value = user!!.address ?: "")
-            ProfileInfoItem(label = "Phone", value = user.phoneNumber ?: "")
-            ProfileInfoItem(label = "Date of Birth", value = user.dateOfBirth ?: "")
-            ProfileInfoItem(label = "Gender", value = user.gender ?: "")
+            ProfileInfoItem(label = "Address", value = user?.address ?: "")
+            ProfileInfoItem(label = "Phone", value = user?.phoneNumber ?: "")
+            ProfileInfoItem(label = "Date of Birth", value = user?.dateOfBirth ?: "")
+            ProfileInfoItem(label = "Gender", value = user?.gender ?: "")
+            ProfileInfoItem(label = "Username", value = user?.user ?: "")
         }
     }
 
@@ -173,14 +179,7 @@ fun ProfileContent(user: UserProfile?, navHostController: NavHostController, onE
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    Button(
-        onClick = { navHostController.navigate("Home_Screen") },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        Text(text = "Login")
-    }
+
 
     Spacer(modifier = Modifier.height(24.dp))
 }
@@ -198,6 +197,7 @@ fun EditUserProfileDialog(
     var phoneNumber by remember { mutableStateOf(user.phoneNumber) }
     var dateOfBirth by remember { mutableStateOf(user.dateOfBirth) }
     var gender by remember { mutableStateOf(user.gender) }
+    var username by remember { mutableStateOf(user.user) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -210,12 +210,23 @@ fun EditUserProfileDialog(
                 OutlinedTextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = { Text("Phone Number") })
                 OutlinedTextField(value = dateOfBirth, onValueChange = { dateOfBirth = it }, label = { Text("Date of Birth") })
                 OutlinedTextField(value = gender, onValueChange = { gender = it }, label = { Text("Gender") })
+                OutlinedTextField(value = username, onValueChange = { username = it }, label = { Text("Username") })
             }
         },
         confirmButton = {
             Button(onClick = {
                 onSave(
-                    UserProfile(user.id, name, lastName, address, phoneNumber, dateOfBirth, gender)
+                    UserProfile(
+                        id = user.id,
+                        name = name,
+                        lastName = lastName,
+                        address = address,
+                        phoneNumber = phoneNumber,
+                        dateOfBirth = dateOfBirth,
+                        gender = gender,
+                        password = user.password,
+                        user = username
+                    )
                 )
             }) {
                 Text("Save")
@@ -236,3 +247,4 @@ fun ProfileInfoItem(label: String, value: String?) {
         Text(text = value ?: "Not provided", fontSize = 16.sp, fontWeight = FontWeight.Medium)
     }
 }
+

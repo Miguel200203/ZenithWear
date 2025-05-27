@@ -1,48 +1,53 @@
 package com.example.zenithwear.ui.Screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.runtime.*
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.zenithwear.R
+import com.example.zenithwear.data.Model.UserProfile
+import com.example.zenithwear.data.Model.UserPreferences
+import com.example.zenithwear.data.Model.network.RetrofitClient
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+
 @Composable
 fun Login(navHostController: NavHostController) {
-    var email by remember { mutableStateOf(TextFieldValue("")) }
+    val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
+    val coroutineScope = rememberCoroutineScope()
+
+    var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
-    var isEmailValid by remember { mutableStateOf(false) }
+    var isUsernameValid by remember { mutableStateOf(false) }
     var isPasswordValid by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Recuperar username del usuario guardado al iniciar la pantalla
+    LaunchedEffect(Unit) {
+        userPreferences.userFlow.collectLatest { savedUser ->
+            savedUser?.let {
+                username = TextFieldValue(it.user)
+                isUsernameValid = it.user.isNotBlank()
+                // Opcional: podrías prellenar password si quieres, aunque no es recomendable
+            }
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -53,148 +58,140 @@ fun Login(navHostController: NavHostController) {
     ) {
         item {
             imagen()
-            Text("Enter your email to log in to the app", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Enter your username and password to log in", fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(16.dp))
         }
         item {
-            CuadroTextoCorreo(
-                value = email,
-                onValueChange = { newValue ->
-                    email = newValue
-                    isEmailValid = isValidEmail(newValue.text)
+            OutlinedTextField(
+                value = username,
+                onValueChange = {
+                    username = it
+                    isUsernameValid = it.text.isNotBlank()
+                    errorMessage = null
                 },
-                isError = !isEmailValid && email.text.isNotEmpty()
+                label = { Text("Username") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                isError = !isUsernameValid && username.text.isNotEmpty(),
+                singleLine = true
             )
-            cuadroPassword(
-                value = password,
-                onValueChange = { newValue ->
-                    password = newValue
-                    isPasswordValid = newValue.text.isNotEmpty()
-                },
-                isError = !isPasswordValid && password.text.isNotEmpty()
-            )
-        }
-        item {
-            Button(
-                modifier = Modifier.padding(15.dp)
-                    .width(310.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                onClick = { navHostController.navigate("HomePage") },
-                enabled = isEmailValid && isPasswordValid
-            ) {
+            if (!isUsernameValid && username.text.isNotEmpty()) {
                 Text(
-                    "Continue",
-                    fontSize = 18.sp,
-                    color = Color.White
+                    "Username cannot be empty",
+                    color = Color.Red,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    isPasswordValid = it.text.isNotEmpty()
+                    errorMessage = null
+                },
+                label = { Text("Password") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                visualTransformation = PasswordVisualTransformation(),
+                isError = !isPasswordValid && password.text.isNotEmpty(),
+                singleLine = true
+            )
+            if (!isPasswordValid && password.text.isNotEmpty()) {
+                Text(
+                    "Password cannot be empty",
+                    color = Color.Red,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        item {
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage ?: "",
+                    color = Color.Red,
+                    modifier = Modifier.padding(16.dp)
                 )
             }
         }
         item {
-
+            Button(
+                modifier = Modifier
+                    .padding(15.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        errorMessage = null
+                        try {
+                            val response = RetrofitClient.apiService.getUsers()
+                            if (response.isSuccessful) {
+                                val users = response.body() ?: emptyList<UserProfile>()
+                                val user = users.find {
+                                    it.user == username.text && it.password == password.text
+                                }
+                                if (user != null) {
+                                    // Guardar usuario completo en DataStore
+                                    userPreferences.saveUser(user)
+                                    navHostController.navigate("HomePage") {
+                                        popUpTo("Login") { inclusive = true }
+                                    }
+                                } else {
+                                    errorMessage = "Invalid username or password"
+                                }
+                            } else {
+                                errorMessage = "Error contacting server"
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = "Network error: ${e.localizedMessage}"
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = isUsernameValid && isPasswordValid && !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Login", fontSize = 18.sp)
+                }
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Forgot Password?",
                 color = Color.Blue,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .padding(8.dp)
                     .clickable {
-                        if (isEmailValid) {
+                        if (isUsernameValid) {
                             navHostController.navigate("VerificationCodeScreen")
                         }
-
-
                     }
+                    .padding(8.dp),
+                fontSize = 16.sp
             )
         }
-    }
-}
-
-@Composable
-fun CuadroTextoCorreo(
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    isError: Boolean
-) {
-    var estaEscribiendo by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { if (!estaEscribiendo) Text("Correo electrónico") },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.White,
-            focusedContainerColor = Color.White,
-            focusedIndicatorColor = if (isError) Color.Red else Color.Blue, // Cambiar color si hay error
-            unfocusedIndicatorColor = if (isError) Color.Red else Color.Gray
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        singleLine = true,
-        placeholder = { if (!estaEscribiendo) Text("Ingresa tu correo") },
-        isError = isError
-    )
-    if (isError) {
-        Text(
-            text = "Correo no válido",
-            color = Color.Red,
-            modifier = Modifier.padding(start = 16.dp)
-        )
-    }
-}
-
-@Composable
-fun cuadroPassword(
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    isError: Boolean
-) {
-    var estaEscribiendo by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { if (!estaEscribiendo) Text("Contraseña") },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.White,
-            focusedContainerColor = Color.White,
-            focusedIndicatorColor = if (isError) Color.Red else Color.Blue, // Cambiar color si hay error
-            unfocusedIndicatorColor = if (isError) Color.Red else Color.Gray
-        ),
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        singleLine = true,
-        placeholder = { if (!estaEscribiendo) Text("Ingresa tu contraseña") },
-        visualTransformation = PasswordVisualTransformation(),
-        isError = isError
-    )
-    if (isError) {
-        Text(
-            text = "La contraseña no puede estar vacía",
-            color = Color.Red,
-            modifier = Modifier.padding(start = 16.dp)
-        )
     }
 }
 
 @Composable
 fun imagen() {
-    Image(
-        modifier = Modifier.padding(25.dp)
+    androidx.compose.foundation.Image(
+        modifier = Modifier
+            .padding(25.dp)
             .clip(RoundedCornerShape(45.dp)),
-        painter = painterResource(R.drawable.icono),
+        painter = painterResource(id = R.drawable.icono),
         contentDescription = "Logo"
     )
-}
-
-
-fun isValidEmail(email: String): Boolean {
-    val emailRegex = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})"
-    return email.matches(emailRegex.toRegex())
 }

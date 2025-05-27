@@ -20,6 +20,9 @@ interface ApiService {
     @GET("users")
     suspend fun getUsers(): Response<List<UserProfile>>
 
+    @POST("users")
+    suspend fun createUser(@Body user: UserProfile): Response<UserProfile>
+
     @PUT("users/{id}")
     suspend fun updateUser(
         @Path("id") id: Int,

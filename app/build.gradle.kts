@@ -77,7 +77,7 @@ dependencies {
     implementation ("androidx.core:core-ktx:1.12.0")
     implementation ("androidx.compose.material:material-icons-extended")
 
-
+    implementation ("androidx.datastore:datastore-preferences:1.1.7")
     // Retrofit para conectar con el backend
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
